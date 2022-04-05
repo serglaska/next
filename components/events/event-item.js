@@ -1,9 +1,8 @@
-import Link from 'next/link';
 import { Button } from '../ui/index';
-import AddressIcon from '../icons/address-icon';
-import ArrowRight from '../icons/arrow-right-icon';
 import DateIcon from '../icons/date-icon';
 import style from './event-item.module.css';
+import AddressIcon from '../icons/address-icon';
+import ArrowRight from '../icons/arrow-right-icon';
 ////////////////////////////////////////////
 
 export const EventItem = ({ item }) => {
@@ -36,7 +35,7 @@ export const EventItem = ({ item }) => {
         </div>
       </div>
       <div className={style.actions}>
-        <Button link={`events/${item.id}`}>
+        <Button link={`/events/${item.id}`}>
           <span>
             Explore link
           </span>
