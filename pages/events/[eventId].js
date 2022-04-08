@@ -1,4 +1,5 @@
 import { Fragment } from 'react';
+import Comments from '../../components/input/comments';
 import { allEvents, getEventById } from '../../helpers/utils/index';
 import EventContent from '../../components/event-detail/event-content';
 import EventSummary from '../../components/event-detail/event-summary';
@@ -21,6 +22,7 @@ const EventDetail = (props) => {
     <EventContent>
       <p>{selectedEvent.description}</p>
     </EventContent>
+    <Comments eventId={selectedEvent.id} />
   </Fragment>
 };
 
