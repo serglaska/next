@@ -1,12 +1,19 @@
-import { useRef } from 'react';
+import { useRef, useContext } from 'react';
+import NotificationData from '../../store/notification-context';
 import classes from './newsletter-registration.module.css';
 ///////////////////////////////////////////////////////////
 
 function NewsletterRegistration() {
+  const notificationCtx = useContext(NotificationData);
   const emailRef = useRef();
   function registrationHandler(event) {
     event.preventDefault();
     const enteredEmail = emailRef.current.value;
+    notificationCtx.showNotification({
+      title: 'Pending',
+      status: 'pending',
+      message: 'Please wait some times...',
+    });
     fetch('/api/emails', {
       method: 'POST',
       headers: {
@@ -15,8 +22,27 @@ function NewsletterRegistration() {
       body: JSON.stringify({
         email: enteredEmail
       })
-    }).then(res => res.json())
-      .then(data => console.log(data, 'promise works'));
+    }).then(res => {
+      if (res.ok) {
+        return res.json()
+      } else {
+        throw new Error('Error from server')
+      }
+    })
+      .then(_ => {
+        notificationCtx.showNotification({
+          title: 'Success',
+          status: 'success',
+          message: 'Everything is ok',
+        });
+      })
+      .catch(error => {
+        notificationCtx.showNotification({
+          title: 'Error',
+          status: 'error',
+          message: 'Unpredictable error...' + error.message,
+        });
+      });
   };
 
   return (

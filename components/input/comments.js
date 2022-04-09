@@ -1,21 +1,29 @@
+import {
+  useState,
+  useEffect,
+  useContext
+} from 'react';
 import NewComment from './new-comment';
 import CommentList from './comment-list';
-import { useState, useEffect } from 'react';
+import NotificationData from '../../store/notification-context';
 import classes from './comments.module.css';
 ////////////////////////////////////////////
 
 function Comments(props) {
   const { eventId } = props;
-
-  const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState([]);
+  const notificationCtx = useContext(NotificationData)
+  const [showComments, setShowComments] = useState(false);
+  const [isFetchingComments, setIsFetchingComments] = useState(false);
 
   useEffect(() => {
     if (showComments) {
+      setIsFetchingComments(true);
       fetch('/api/comments/' + eventId)
         .then(response => response.json())
         .then(data => {
-          setComments(data.comments)
+          setComments(data.comments);
+          setIsFetchingComments(false);
         })
     }
   },
@@ -27,6 +35,11 @@ function Comments(props) {
   }
 
   function addCommentHandler(commentData) {
+    notificationCtx.showNotification({
+      title: 'Pending',
+      status: 'pending',
+      message: 'Please wait some times...',
+    });
     fetch('/api/comments/' + eventId, {
       method: 'POST',
       body: JSON.stringify(commentData),
@@ -34,8 +47,27 @@ function Comments(props) {
         'Content-Type': 'application/json'
       }
     })
-      .then(response => response.json())
-      .then(data => console.log(data))
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Error from server')
+        }
+      })
+      .then(_ => {
+        notificationCtx.showNotification({
+          title: 'Success',
+          status: 'success',
+          message: 'Comment was added',
+        });
+      })
+      .catch(error => {
+        notificationCtx.showNotification({
+          title: 'Error',
+          status: 'error',
+          message: 'Unpredictable error...' + error.message,
+        });
+      })
   }
 
   return (
@@ -44,7 +76,8 @@ function Comments(props) {
         {showComments ? 'Hide' : 'Show'} Comments
       </button>
       {showComments && <NewComment onAddComment={addCommentHandler} />}
-      {showComments && <CommentList comments={comments} />}
+      {showComments && !isFetchingComments && <CommentList comments={comments} />}
+      {showComments && isFetchingComments && <p>Comments is loading...</p>}
     </section>
   );
 }
